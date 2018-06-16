@@ -45,7 +45,7 @@ async function getExistingCoins() {
 
     for (const coin of existingCoinsQuery)
         existingCoins.push(coin.identifier)
-        
+
     //console.log(existingCoins)
     return existingCoins
 }
