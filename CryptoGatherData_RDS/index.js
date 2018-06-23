@@ -21,35 +21,47 @@ exports.handler = async function(event, context, callback) {
 
     for (const coin of response.body) {
         //console.log(coin.name)
+        //console.log(coin.id)
+        //console.log(coin.symbol)
 
-        const coinID = await setupCoin(coin, existingCoins);
-        await updatePrice(coin)
+        const iconURL = `https://chasing-coins.com/api/v1/std/logo/${coin.symbol}`;
+
+        await setupCoin(coin, existingCoins, iconURL);
+        await addNewPrice(coin);
     }
 
-    db.close().catch()
+    db.close().catch();
 };
 
-async function setupCoin(coin, existingCoins) {
+async function setupCoin(coin, existingCoins, iconURL) {
+    // console.log(`Updating ${coin.id}`)
+
     if (!(existingCoins.includes(coin.id))) {
+
         await db.query("INSERT INTO `coin` (`name`, `identifier`, `symbol`) VALUES('" + coin.name + "', '" + coin.id + "', '" + coin.symbol + "');");
+
     }
     else {
-        await db.query(`UPDATE coin SET name="${coin.name}", symbol="${coin.symbol}" WHERE identifier = "${coin.id}"`)
+
+        const query = `UPDATE coin SET name = ?, symbol = ?, iconURL = ? WHERE identifier = ?`;
+        const args = [coin.name, coin.symbol, iconURL, coin.id];
+        await db.query(query, args);
+
     }
 }
 
 async function getExistingCoins() {
     const existingCoinsQuery = await db.query("select * from coin");
     //console.log(result)
-    const existingCoins = []
+    const existingCoins = [];
 
     for (const coin of existingCoinsQuery)
-        existingCoins.push(coin.identifier)
+        existingCoins.push(coin.identifier);
 
     //console.log(existingCoins)
-    return existingCoins
+    return existingCoins;
 }
 
-async function updatePrice(coin) {
+async function addNewPrice(coin) {
     await db.query("INSERT INTO `coinPrices` (`priceUSD`, `coinIdentifier`) VALUES('" + coin.price_usd + "', '" + coin.id + "');");
 }
