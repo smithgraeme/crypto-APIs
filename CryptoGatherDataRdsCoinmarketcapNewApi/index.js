@@ -4,6 +4,9 @@ const got = require('got');
 var db;
 
 exports.handler = async function(event, context, callback) {
+    console.log(JSON.stringify(event));
+    console.log("Target coin count: " + event.coinCount);
+    
     context.callbackWaitsForEmptyEventLoop = true;
 
     const options = {
@@ -13,12 +16,11 @@ exports.handler = async function(event, context, callback) {
         }
     };
     
-    const response = await got('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=5000', options);
-
-    //console.log(response);
-    //console.log(response.body);
+    const response = await got('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=' + event.coinCount, options);
 
     const coins = response.body.data;
+    
+    console.log("Coin count: " + coins.length);
 
     console.log(JSON.stringify(coins));
 
